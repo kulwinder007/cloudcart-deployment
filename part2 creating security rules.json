@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Create Security Groups for Cloudcart Application - Fetching Parameters from SSM and store trusted ips"
+Description: "Create Security Groups for Cloudcart Application - Store trusted ips in SSM"
 
 Resources:
   # Web Servers Security Group
@@ -13,16 +13,20 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/loadbalancer/id}}' # ELB
+          CidrIp: 0.0.0.0/0 # From anywhere
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}'  # SSH from Bastion
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}'
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 8080  # App servers 8080
           ToPort: 8080  # App servers 8080
-          DestinationSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/appservers/id}}'
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -43,16 +47,20 @@ Resources:
         - IpProtocol: tcp
           FromPort: 8080
           ToPort: 8080
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/webservers/id}}'  # From Web Servers
+          CidrIp: 0.0.0.0/0 # From anywhere
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}'  # SSH from Bastion
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}'
       SecurityGroupEgress:
         - IpProtocol: tcp
           FromPort: 27017 #Database port
           ToPort: 27017 #Database port
-          DestinationSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/database/id}}' # Access to Database
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
         - IpProtocol: tcp
           FromPort: 443
           ToPort: 443
@@ -73,11 +81,15 @@ Resources:
         - IpProtocol: tcp
           FromPort: 27017
           ToPort: 27017
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/appservers/id}}'  # From App Servers
+          CidrIp: 0.0.0.0/0 # From anywhere
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
-          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}' # SSH from Bastion
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}'
       SecurityGroupEgress:
         - IpProtocol: tcp #Allow all outbound
           FromPort: 0
