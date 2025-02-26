@@ -1,0 +1,212 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Create Security Groups for Cloudcart Application"
+
+Resources:
+  # Web Servers Security Group
+  WebServersSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: WebServersSG
+      GroupDescription: Allow inbound traffic on port 80 from the ELB and SSH from bastion host, outbound to App Servers and Internet
+      VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80  #internet traffic
+          ToPort: 80    #on to loadbalancer
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/loadbalancer/id}}' # ELB
+        - IpProtocol: tcp
+          FromPort: 22  #internet traffic
+          ToPort: 22    #bastion host
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}'  # SSH from Bastion
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 8080  # web server port 8080
+          ToPort: 8080  # App server port 8080
+          DestinationSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/appservers/id}}'
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
+
+  # App Servers Security Group
+  AppServersSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: AppServersSG
+      GroupDescription: Allow inbound traffic on port 8080 from Web Servers and SSH from bastion host, outbound to Database and Internet
+      VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8080
+          ToPort: 8080
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/webservers/id}}'  # From Web Servers
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}'  # SSH from Bastion
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 27017 #Database port
+          ToPort: 27017 #Database port
+          DestinationSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/database/id}}' # Access to Database
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
+
+  # Database Security Group
+  DatabaseSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: DatabaseSG
+      GroupDescription: Allow inbound traffic from the App Servers on port 27017 and inbound traffic from bastionhost on the port 22.
+      VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 27017
+          ToPort: 27017
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/appservers/id}}'  # From App Servers
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}' # SSH from Bastion
+      SecurityGroupEgress:
+        - IpProtocol: tcp #Allow all outbound
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: 0.0.0.0/0 # outbound internet, ideally limit to known destinations
+
+  # Load Balancer Security Group
+  LoadBalancerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: LoadBalancerSG
+      GroupDescription: Allow inbound traffic on port 80 from the Internet, outbound to Web Servers
+      VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0 # From anywhere
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/web/az1/id}}' #To Web subnet in AZ1
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/web/az2/id}}' #To Web subnet in AZ2
+
+  # Bastion Host Security Group
+  BastionHostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: BastionHostSG
+      GroupDescription: Allow inbound SSH traffic from specified IPs, outbound to private subnets
+      VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}'
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}'
+      SecurityGroupEgress:
+        - IpProtocol: tcp  #Allow all outbound to the web subnet for the AZ1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/web/az1/id}}'
+        - IpProtocol: tcp  #Allow all outbound to the app subnet for the AZ1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/app/az1/id}}'
+        - IpProtocol: tcp  #Allow all outbound to the database subnet for the AZ1
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/db/az1/id}}'
+        - IpProtocol: tcp  #Allow all outbound to the web subnet for the AZ2
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/web/az2/id}}'
+        - IpProtocol: tcp  #Allow all outbound to the app subnet for the AZ2
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/app/az2/id}}'
+        - IpProtocol: tcp  #Allow all outbound to the database subnet for the AZ2
+          FromPort: 0
+          ToPort: 65535
+          CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/db/az2/id}}'
+
+  #Store trusted ip1 in ssm
+  CreateTrustedIp1Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/bastionhost/trustedip1"
+      Type: String
+      Value: "192.197.54.31/32"
+      Description: "The trusted IP range for SSH access to Bastion Host"
+
+  #Store trusted ip2 in ssm
+  CreateTrustedIp2Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/bastionhost/trustedip2"
+      Type: String
+      Value: "142.198.186.220/32"
+      Description: "The trusted IP range for SSH access to Bastion Host"
+
+  # Store WebServersSecurityGroupId in ssm
+  CreateWebServersSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/webservers/id"
+      Type: String
+      Value: !Ref WebServersSecurityGroup
+      Description: "The Web Servers Security Group Id"
+
+  # Store AppServersSecurityGroupId in ssm
+  CreateAppServersSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/appservers/id"
+      Type: String
+      Value: !Ref AppServersSecurityGroup
+      Description: "The App Servers Security Group Id"
+
+  # Store DatabaseSecurityGroupId in ssm
+  CreateDatabaseSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/database/id"
+      Type: String
+      Value: !Ref DatabaseSecurityGroup
+      Description: "The Database Security Group Id"
+
+  # Store LoadBalancerSecurityGroupId in ssm
+  CreateLoadBalancerSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/loadbalancer/id"
+      Type: String
+      Value: !Ref LoadBalancerSecurityGroup
+      Description: "The Load Balancer Security Group Id"
+
+  # Store BastionHostSecurityGroupId in ssm
+  CreateBastionHostSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/bastionhost/id"
+      Type: String
+      Value: !Ref BastionHostSecurityGroup
+      Description: "The Bastion Host Security Group Id"
