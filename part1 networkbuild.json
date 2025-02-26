@@ -1,0 +1,315 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "1. Creating VPC, subnets, IGW, NAT-GWs, Route tables"
+
+Parameters:
+  AZ1Location:
+    Type: String
+    Default: us-east-1a
+    Description: Availability Zone 1 Location
+
+  AZ2Location:
+    Type: String
+    Default: us-east-1b
+    Description: Availability Zone 2 Location
+
+Resources:
+  CloudcartVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: Cloudcart-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: Cloudcart-IGW
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnetAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.1.0/28
+      AvailabilityZone: !Ref AZ1Location
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnetAZ1
+
+  PrivateSubnetFrontendAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.1.16/28
+      AvailabilityZone: !Ref AZ1Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetFrontendAZ1
+
+  PrivateSubnetBackendAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.1.32/28
+      AvailabilityZone: !Ref AZ1Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetBackendAZ1
+
+  PrivateSubnetDatabaseAZ1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.1.48/28
+      AvailabilityZone: !Ref AZ1Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetDatabaseAZ1
+
+  PublicSubnetAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.2.0/28
+      AvailabilityZone: !Ref AZ2Location
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: PublicSubnetAZ2
+
+  PrivateSubnetFrontendAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.2.16/28
+      AvailabilityZone: !Ref AZ2Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetFrontendAZ2
+
+  PrivateSubnetBackendAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.2.32/28
+      AvailabilityZone: !Ref AZ2Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetBackendAZ2
+
+  PrivateSubnetDatabaseAZ2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      CidrBlock: 10.0.2.48/28
+      AvailabilityZone: !Ref AZ2Location
+      Tags:
+        - Key: Name
+          Value: PrivateSubnetDatabaseAZ2
+
+  # NAT Gateway and Elastic IP for AZ1
+  NatGatewayEIPAZ1:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: NatGatewayEIPAZ1
+
+  NatGatewayAZ1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIPAZ1.AllocationId
+      SubnetId: !Ref PublicSubnetAZ1
+      Tags:
+        - Key: Name
+          Value: NatGatewayAZ1
+
+  # NAT Gateway and Elastic IP for AZ2
+  NatGatewayEIPAZ2:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: NatGatewayEIPAZ2
+
+  NatGatewayAZ2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGatewayEIPAZ2.AllocationId
+      SubnetId: !Ref PublicSubnetAZ2
+      Tags:
+        - Key: Name
+          Value: NatGatewayAZ2
+
+  # Public Route Table and Route
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PublicRouteTable
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAZ1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetAZ2
+      RouteTableId: !Ref PublicRouteTable
+
+  # Private Route Table for Frontend and Routes for AZ1
+  PrivateRouteTableFrontendAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableFrontendAZ1
+
+  PrivateRouteFrontendAZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableFrontendAZ1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ1
+
+  PrivateRouteFrontendAZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetFrontendAZ1
+      RouteTableId: !Ref PrivateRouteTableFrontendAZ1
+
+  # Private Route Table for Backend and Routes for AZ1
+  PrivateRouteTableBackendAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableBackendAZ1
+
+  PrivateRouteBackendAZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableBackendAZ1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ1
+
+  PrivateRouteBackendAZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetBackendAZ1
+      RouteTableId: !Ref PrivateRouteTableBackendAZ1
+
+  # Private Route Table for Database and Routes for AZ1
+  PrivateRouteTableDatabaseAZ1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableDatabaseAZ1
+
+  PrivateRouteDatabaseAZ1Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableDatabaseAZ1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ1
+
+  PrivateRouteDatabaseAZ1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetDatabaseAZ1
+      RouteTableId: !Ref PrivateRouteTableDatabaseAZ1
+
+  # Private Route Table for Frontend and Routes for AZ2
+  PrivateRouteTableFrontendAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableFrontendAZ2
+
+  PrivateRouteFrontendAZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableFrontendAZ2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ2
+
+  PrivateRouteFrontendAZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetFrontendAZ2
+      RouteTableId: !Ref PrivateRouteTableFrontendAZ2
+
+  # Private Route Table for Backend and Routes for AZ2
+  PrivateRouteTableBackendAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableBackendAZ2
+
+  PrivateRouteBackendAZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableBackendAZ2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ2
+
+  PrivateRouteBackendAZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetBackendAZ2
+      RouteTableId: !Ref PrivateRouteTableBackendAZ2
+
+  # Private Route Table for Database and Routes for AZ2
+  PrivateRouteTableDatabaseAZ2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref CloudcartVPC
+      Tags:
+        - Key: Name
+          Value: PrivateRouteTableDatabaseAZ2
+
+  PrivateRouteDatabaseAZ2Route:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTableDatabaseAZ2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGatewayAZ2
+
+  PrivateRouteDatabaseAZ2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetDatabaseAZ2
+      RouteTableId: !Ref PrivateRouteTableDatabaseAZ2
