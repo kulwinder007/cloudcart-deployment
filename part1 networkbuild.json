@@ -313,3 +313,68 @@ Resources:
     Properties:
       SubnetId: !Ref PrivateSubnetDatabaseAZ2
       RouteTableId: !Ref PrivateRouteTableDatabaseAZ2
+
+Outputs:
+  VPCId:
+    Description: The ID of the VPC
+    Value: !Ref CloudcartVPC
+    Export:
+      Name: CloudcartVPCId
+
+  PublicSubnetAZ1Id:
+    Description: The ID of the Public Subnet in AZ1
+    Value: !Ref PublicSubnetAZ1
+    Export:
+      Name: PublicSubnetAZ1Id
+
+  PublicSubnetAZ2Id:
+    Description: The ID of the Public Subnet in AZ2
+    Value: !Ref PublicSubnetAZ2
+    Export:
+      Name: PublicSubnetAZ2Id
+
+  PrivateSubnetFrontendAZ1Id:
+    Description: The ID of the Private Subnet for Web Servers in AZ1
+    Value: !Ref PrivateSubnetFrontendAZ1
+    Export:
+      Name: PrivateSubnetFrontendAZ1Id
+
+  PrivateSubnetFrontendAZ2Id:
+    Description: The ID of the Private Subnet for Web Servers in AZ2
+    Value: !Ref PrivateSubnetFrontendAZ2
+    Export:
+      Name: PrivateSubnetFrontendAZ2Id
+
+  PrivateSubnetBackendAZ1Id:
+    Description: The ID of the Private Subnet for App Servers in AZ1
+    Value: !Ref PrivateSubnetBackendAZ1
+    Export:
+      Name: PrivateSubnetBackendAZ1Id
+
+  PrivateSubnetBackendAZ2Id:
+    Description: The ID of the Private Subnet for App Servers in AZ2
+    Value: !Ref PrivateSubnetBackendAZ2Id
+    Export:
+      Name: PrivateSubnetBackendAZ2Id
+
+  PrivateSubnetDatabaseAZ1Id:
+    Description: The ID of the Private Subnet for the Database in AZ1
+    Value: !Ref PrivateSubnetDatabaseAZ1
+    Export:
+      Name: PrivateSubnetDatabaseAZ1Id
+
+  PrivateSubnetDatabaseAZ2Id:
+    Description: The ID of the Private Subnet for the Database in AZ2
+    Value: !Ref PrivateSubnetDatabaseAZ2
+    Export:
+      Name: PrivateSubnetDatabaseAZ2Id
+  AZ1Location:
+    Description: The Availability Zone for AZ1
+    Value: !Ref AZ1Location
+    Export:
+      Name: AZ1Location
+  AZ2Location:
+    Description: The Availability Zone for AZ2
+    Value: !Ref AZ2Location
+    Export:
+      Name: AZ2Location
