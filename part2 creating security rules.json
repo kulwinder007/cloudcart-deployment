@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Create Security Groups for Cloudcart Application"
+Description: "Create Security Groups for Cloudcart Application - Fetching Parameters from SSM and store trusted ips"
 
 Resources:
   # Web Servers Security Group
@@ -11,17 +11,17 @@ Resources:
       VpcId: !Sub '{{resolve:ssm:/cloudcart/vpc/id}}'
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 80  #internet traffic
-          ToPort: 80    #on to loadbalancer
+          FromPort: 80
+          ToPort: 80
           SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/loadbalancer/id}}' # ELB
         - IpProtocol: tcp
-          FromPort: 22  #internet traffic
-          ToPort: 22    #bastion host
+          FromPort: 22
+          ToPort: 22
           SourceSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/bastionhost/id}}'  # SSH from Bastion
       SecurityGroupEgress:
         - IpProtocol: tcp
-          FromPort: 8080  # web server port 8080
-          ToPort: 8080  # App server port 8080
+          FromPort: 8080  # App servers 8080
+          ToPort: 8080  # App servers 8080
           DestinationSecurityGroupId: !Sub '{{resolve:ssm:/cloudcart/securitygroup/appservers/id}}'
         - IpProtocol: tcp
           FromPort: 443
@@ -170,43 +170,4 @@ Resources:
   CreateWebServersSecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: "/cloudcart/securitygroup/webservers/id"
-      Type: String
-      Value: !Ref WebServersSecurityGroup
-      Description: "The Web Servers Security Group Id"
-
-  # Store AppServersSecurityGroupId in ssm
-  CreateAppServersSecurityGroupIdParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/securitygroup/appservers/id"
-      Type: String
-      Value: !Ref AppServersSecurityGroup
-      Description: "The App Servers Security Group Id"
-
-  # Store DatabaseSecurityGroupId in ssm
-  CreateDatabaseSecurityGroupIdParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/securitygroup/database/id"
-      Type: String
-      Value: !Ref DatabaseSecurityGroup
-      Description: "The Database Security Group Id"
-
-  # Store LoadBalancerSecurityGroupId in ssm
-  CreateLoadBalancerSecurityGroupIdParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/securitygroup/loadbalancer/id"
-      Type: String
-      Value: !Ref LoadBalancerSecurityGroup
-      Description: "The Load Balancer Security Group Id"
-
-  # Store BastionHostSecurityGroupId in ssm
-  CreateBastionHostSecurityGroupIdParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/securitygroup/bastionhost/id"
-      Type: String
-      Value: !Ref BastionHostSecurityGroup
-      Description: "The Bastion Host Security Group Id"
+      Name: "/cloudcart/securitygroup/web
