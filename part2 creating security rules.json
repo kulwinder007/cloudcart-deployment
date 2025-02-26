@@ -170,4 +170,43 @@ Resources:
   CreateWebServersSecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: "/cloudcart/securitygroup/web
+      Name: "/cloudcart/securitygroup/webservers/id"
+      Type: String
+      Value: !Ref WebServersSecurityGroup
+      Description: "The Web Servers Security Group Id"
+
+  # Store AppServersSecurityGroupId in ssm
+  CreateAppServersSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/appservers/id"
+      Type: String
+      Value: !Ref AppServersSecurityGroup
+      Description: "The App Servers Security Group Id"
+
+  # Store DatabaseSecurityGroupId in ssm
+  CreateDatabaseSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/database/id"
+      Type: String
+      Value: !Ref DatabaseSecurityGroup
+      Description: "The Database Security Group Id"
+
+  # Store LoadBalancerSecurityGroupId in ssm
+  CreateLoadBalancerSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/loadbalancer/id"
+      Type: String
+      Value: !Ref LoadBalancerSecurityGroup
+      Description: "The Load Balancer Security Group Id"
+
+  # Store BastionHostSecurityGroupId in ssm
+  CreateBastionHostSecurityGroupIdParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/cloudcart/securitygroup/bastionhost/id"
+      Type: String
+      Value: !Ref BastionHostSecurityGroup
+      Description: "The Bastion Host Security Group Id"
