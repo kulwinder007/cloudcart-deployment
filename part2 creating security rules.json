@@ -160,24 +160,6 @@ Resources:
           ToPort: 65535
           CidrIp: !Sub '{{resolve:ssm:/cloudcart/subnet/private/db/az2/id}}'
 
-  #Store trusted ip1 in ssm
-  CreateTrustedIp1Parameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/bastionhost/trustedip1"
-      Type: String
-      Value: "192.197.54.31/32"
-      Description: "The trusted IP range for SSH access to Bastion Host"
-
-  #Store trusted ip2 in ssm
-  CreateTrustedIp2Parameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/bastionhost/trustedip2"
-      Type: String
-      Value: "142.198.186.220/32"
-      Description: "The trusted IP range for SSH access to Bastion Host"
-
   # Store WebServersSecurityGroupId in ssm
   CreateWebServersSecurityGroupIdParameter:
     Type: AWS::SSM::Parameter
