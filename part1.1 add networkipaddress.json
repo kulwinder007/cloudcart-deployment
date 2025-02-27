@@ -4,12 +4,12 @@
   "Parameters": {
     "TrustedSourceIp1": {
       "Type": "String",
-      "Default": "192.197.54.31/32",
+      "Default": "192.197.54.31",
       "Description": "IP address allowed to SSH to bastion host"
     },
     "TrustedSourceIp2": {
       "Type": "String",
-      "Default": "142.198.186.220/32",
+      "Default": "142.198.186.220",
       "Description": "IP address allowed to SSH to bastion host"
     }
   },

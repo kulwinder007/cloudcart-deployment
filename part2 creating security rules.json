@@ -22,7 +22,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}/32"
             }
           },
           {
@@ -30,7 +30,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}/32"
             }
           }
         ],
@@ -76,7 +76,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}/32"
             }
           },
           {
@@ -84,7 +84,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}/32"
             }
           }
         ],
@@ -130,7 +130,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}/32"
             }
           },
           {
@@ -138,7 +138,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}/32"
             }
           }
         ],
@@ -173,17 +173,13 @@
             "IpProtocol": "tcp",
             "FromPort": 80,
             "ToPort": 80,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/web/az1/id}}"
-            }
+            "CidrIp": "10.0.2.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 80,
             "ToPort": 80,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/web/az2/id}}"
-            }
+            "CidrIp": "10.0.12.0/24"
           }
         ]
       }
@@ -202,7 +198,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}/32"
             }
           },
           {
@@ -210,7 +206,7 @@
             "FromPort": 22,
             "ToPort": 22,
             "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}"
+              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}/32"
             }
           }
         ],
@@ -219,49 +215,37 @@
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/web/az1/id}}"
-            }
+            "CidrIp": "10.0.2.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/app/az1/id}}"
-            }
+            "CidrIp": "10.0.3.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/db/az1/id}}"
-            }
+            "CidrIp": "10.0.4.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/web/az2/id}}"
-            }
+            "CidrIp": "10.0.12.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/app/az2/id}}"
-            }
+            "CidrIp": "10.0.13.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 0,
             "ToPort": 65535,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/subnet/private/db/az2/id}}"
-            }
+            "CidrIp": "10.0.14.0/24"
           }
         ]
       }
