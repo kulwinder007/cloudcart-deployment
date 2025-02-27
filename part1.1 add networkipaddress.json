@@ -1,31 +1,40 @@
-AWSTemplateFormatVersion: "2010-09-09"
-Description: "Create SSM Parameters for Bastion Host Trusted IPs"
-
-Parameters:
-  TrustedSourceIp1:
-    Type: String
-    Default: 192.197.54.31/32
-    Description: IP address allowed to SSH to bastion host
-  TrustedSourceIp2:
-    Type: String
-    Default: 142.198.186.220/32
-    Description: IP address allowed to SSH to bastion host
-
-Resources:
-  # Create SSM Parameter for Trusted IP 1
-  CreateTrustedIp1Parameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/bastionhost/trustedip1"
-      Type: String
-      Value: !Ref TrustedSourceIp1
-      Description: "The trusted IP range for SSH access to Bastion Host"
-
-  # Create SSM Parameter for Trusted IP 2
-  CreateTrustedIp2Parameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/cloudcart/bastionhost/trustedip2"
-      Type: String
-      Value: !Ref TrustedSourceIp2
-      Description: "The trusted IP range for SSH access to Bastion Host"
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Create SSM Parameters for Bastion Host Trusted IPs",
+  "Parameters": {
+    "TrustedSourceIp1": {
+      "Type": "String",
+      "Default": "192.197.54.31/32",
+      "Description": "IP address allowed to SSH to bastion host"
+    },
+    "TrustedSourceIp2": {
+      "Type": "String",
+      "Default": "142.198.186.220/32",
+      "Description": "IP address allowed to SSH to bastion host"
+    }
+  },
+  "Resources": {
+    "CreateTrustedIp1Parameter": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Name": "/cloudcart/bastionhost/trustedip1",
+        "Type": "String",
+        "Value": {
+          "Ref": "TrustedSourceIp1"
+        },
+        "Description": "The trusted IP range for SSH access to Bastion Host"
+      }
+    },
+    "CreateTrustedIp2Parameter": {
+      "Type": "AWS::SSM::Parameter",
+      "Properties": {
+        "Name": "/cloudcart/bastionhost/trustedip2",
+        "Type": "String",
+        "Value": {
+          "Ref": "TrustedSourceIp2"
+        },
+        "Description": "The trusted IP range for SSH access to Bastion Host"
+      }
+    }
+  }
+}
