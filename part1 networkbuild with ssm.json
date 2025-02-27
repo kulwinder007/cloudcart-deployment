@@ -12,15 +12,6 @@ Parameters:
     Default: us-east-1b
     Description: Availability Zone 2 Location
 
-  TrustedSourceIp1:
-    Type: String
-    Default: 192.197.54.31/32
-    Description: IP address allowed to SSH to bastion host
-  TrustedSourceIp2:
-    Type: String
-    Default: 142.198.186.220/32
-    Description: IP address allowed to SSH to bastion host
-
 Resources:
   CloudcartVPC:
     Type: AWS::EC2::VPC
