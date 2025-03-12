@@ -21,17 +21,13 @@
             "IpProtocol": "tcp",
             "FromPort": 22,
             "ToPort": 22,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip1}}/32"
-            }
+            "CidrIp": "10.0.2.0/24"
           },
           {
             "IpProtocol": "tcp",
             "FromPort": 22,
             "ToPort": 22,
-            "CidrIp": {
-              "Fn::Sub": "{{resolve:ssm:/cloudcart/bastionhost/trustedip2}}/32"
-            }
+            "CidrIp": "10.0.12.0/24"
           }
         ],
         "SecurityGroupEgress": [
